@@ -154,19 +154,16 @@ pub fn generate_compiled(
     let asr = t_en.matmul(&pred_aln_trg)?;
     let speaker_style = ref_s.index((.., ..128));
 
-    // Enable MLX global compilation for decoder kernel fusion.
-    // compile_with_state is unreliable with this decoder (shape-dependent
-    // control flow in vocoder), so we use the global flag which still
-    // fuses adjacent Metal kernels. Random ops have been zeroed in voice-nn
-    // to maximize compilation opportunities.
-    mlx_rs::transforms::compile::enable_compile();
-    let audio = model.decoder.forward(DecoderInput {
-        asr: &asr,
-        f0_curve: &f0_pred,
-        n: &n_pred,
-        s: &speaker_style,
-    })?;
-    mlx_rs::transforms::compile::disable_compile();
+    // compile_with_state: JIT-compile decoder as a single fused Metal graph.
+    // Random ops have been zeroed in voice-nn to make the decoder pure.
+    // Using mlx-rs from git which includes fix #314 for frozen parameters.
+    let mut compiled_decoder = compile_with_state(decoder_forward, None);
+    let decoder_inputs = [asr, f0_pred, n_pred, speaker_style];
+    let decoder_outputs = compiled_decoder(&mut model.decoder, &decoder_inputs)?;
+    let audio = decoder_outputs
+        .into_iter()
+        .next()
+        .ok_or_else(|| Exception::custom("decoder returned no output"))?;
 
     let audio = audio.squeeze()?;
     audio.eval()?;

@@ -1,5 +1,10 @@
 [workspace]
 
+[patch.crates-io]
+mlx-rs = { git = "https://github.com/oxideai/mlx-rs.git" }
+mlx-macros = { git = "https://github.com/oxideai/mlx-rs.git" }
+mlx-sys = { git = "https://github.com/oxideai/mlx-rs.git" }
+
 [package]
 name = "kokoro-mlx-rs"
 version = "0.1.0"
@@ -9,8 +14,8 @@ license = "Apache-2.0"
 repository = "https://github.com/Gibbio/kokoro-mlx-rs"
 
 [dependencies]
-mlx-rs = { version = "0.25", features = ["safetensors"] }
-mlx-macros = "0.25"
+mlx-rs = { git = "https://github.com/oxideai/mlx-rs.git", features = ["safetensors"] }
+mlx-macros = { git = "https://github.com/oxideai/mlx-rs.git" }
 voice-tts = { path = "../voice-patch/voice-tts" }
 voice-nn = { path = "../voice-patch/voice-nn" }
 serde = { version = "1", features = ["derive"] }
