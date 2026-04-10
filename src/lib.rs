@@ -155,9 +155,10 @@ pub fn generate_compiled(
     let speaker_style = ref_s.index((.., ..128));
 
     // Enable MLX global compilation for decoder kernel fusion.
-    // Note: compile_with_state doesn't work here because the decoder has
-    // internal state (dropout RNG, norm stats) not captured by Updatable.
-    // Global enable_compile still fuses adjacent Metal kernels.
+    // compile_with_state is unreliable with this decoder (shape-dependent
+    // control flow in vocoder), so we use the global flag which still
+    // fuses adjacent Metal kernels. Random ops have been zeroed in voice-nn
+    // to maximize compilation opportunities.
     mlx_rs::transforms::compile::enable_compile();
     let audio = model.decoder.forward(DecoderInput {
         asr: &asr,
