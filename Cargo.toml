@@ -4,16 +4,16 @@
 name = "kokoro-mlx-rs"
 version = "0.1.0"
 edition = "2021"
-description = "Kokoro-82M TTS on Apple Silicon — Rust port of mlx-audio's MLX implementation with mx.compile support"
+description = "Kokoro-82M TTS on Apple Silicon — mlx-rs with mx.compile for optimal GPU performance"
 license = "Apache-2.0"
 repository = "https://github.com/Gibbio/kokoro-mlx-rs"
 
 [dependencies]
 mlx-rs = { version = "0.25", features = ["safetensors"] }
 mlx-macros = "0.25"
+voice-tts = "0.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-hf-hub = "0.5"
 
 [[example]]
 name = "generate"
