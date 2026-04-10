@@ -12,6 +12,7 @@ repository = "https://github.com/Gibbio/kokoro-mlx-rs"
 mlx-rs = { version = "0.25", features = ["safetensors"] }
 mlx-macros = "0.25"
 voice-tts = "0.2"
+voice-nn = "0.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 

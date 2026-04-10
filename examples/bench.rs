@@ -24,9 +24,11 @@ fn run_bench(label: &str, model: &mut kokoro_mlx_rs::KokoroModel, voice: &mlx_rs
         let t1 = Instant::now();
         let audio = if compiled {
             kokoro_mlx_rs::generate_compiled(model, &ph, voice, 1.0)
+                .expect("generate failed")
         } else {
             voice_tts::generate(model, &ph, voice, 1.0)
-        }.expect("generate failed");
+                .expect("generate failed")
+        };
 
         let samples = kokoro_mlx_rs::array_to_samples(&audio);
         let inf_ms = t1.elapsed().as_secs_f64() * 1000.0;
@@ -51,13 +53,13 @@ fn main() {
     let voice = kokoro_mlx_rs::load_voice("af_bella", None)
         .expect("failed to load voice");
 
-    // Warmup
+    // Warmup (uncompiled)
     eprint!("  Warmup...");
     let ph = kokoro_mlx_rs::phonemize_it(PHRASES[0].1);
-    let _ = kokoro_mlx_rs::generate_compiled(&mut model, &ph, &voice, 1.0);
+    let _ = voice_tts::generate(&mut model, &ph, &voice, 1.0);
     eprintln!(" done");
 
-    // Without compile
+    // Without compile (FIRST — before compile contaminates the graph)
     println!();
     println!("  {}", "=".repeat(65));
     println!("  voice-tts 0.2 mlx-rs (NO compile) — load: {load_ms:.0}ms");
@@ -65,10 +67,13 @@ fn main() {
     println!();
     run_bench("no-compile", &mut model, &voice, false);
 
-    // With compile
+    // With compile (enable_compile on decoder)
+    // Warmup compiled
+    let _ = kokoro_mlx_rs::generate_compiled(&mut model, &ph, &voice, 1.0);
+
     println!();
     println!("  {}", "=".repeat(65));
-    println!("  kokoro-mlx-rs (WITH mx.compile) — load: {load_ms:.0}ms");
+    println!("  kokoro-mlx-rs (WITH enable_compile decoder) — load: {load_ms:.0}ms");
     println!("  {}", "=".repeat(65));
     println!();
     run_bench("compiled", &mut model, &voice, true);
